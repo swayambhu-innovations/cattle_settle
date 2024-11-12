@@ -1,9 +1,9 @@
 import { View, Text, StyleSheet } from 'react-native';
 
-export default function Policy() {
+export default function Profile() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Policy Screen</Text>
+      <Text style={styles.title}>Profile Screen</Text>
     </View>
   );
 }

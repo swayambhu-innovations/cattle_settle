@@ -1,7 +1,11 @@
 import { Text, View,Image, StyleSheet, Pressable } from "react-native";
-import { Link } from "expo-router";
+import { router, Href,Link } from 'expo-router';
 
 export default function Index() {
+  const getStarted = () => {
+    const href: Href<string> = '/(auth)/Login';  // Remove parentheses from path
+    router.replace(href);
+  };
   return (
     <View style={styles.container} >
             <Image
@@ -12,11 +16,12 @@ export default function Index() {
       <Text style={styles.description}>A App built for social conscience</Text>
 
       <View style={styles.buttonContainer}>
-        <Link href="/(auth)/Login" asChild>
-          <Pressable style={styles.primaryButton}>
-            <Text style={styles.buttonText}>Get Started</Text>
-          </Pressable>
-        </Link>
+            <Pressable 
+        style={styles.primaryButton} 
+        onPress={getStarted}
+      >
+        <Text style={styles.buttonText}>Login</Text>
+      </Pressable>
 
       </View>
     </View>
