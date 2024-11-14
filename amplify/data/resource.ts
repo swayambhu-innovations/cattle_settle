@@ -9,17 +9,92 @@ and "delete" any "Todo" records.
 const schema = a.schema({
   Casualty: a
     .model({
-      // Using string type for coordinates to store as "latitude,longitude"
       location: a.string(),
       manualAddress: a.string(),
-      // Using enum for incident type
       incidentType: a.enum(['road_accident', 'medical', 'traffic', 'other']),
-      // Using timestamp for date
       date: a.datetime(),
       description: a.string(),
-      imageUri: a.string()
+      imageUri: a.string(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
     })
-    .authorization((allow) => [allow.guest()]),
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(['read'])
+    ]),
+
+  Donation: a
+    .model({
+      foodType: a.enum(['hay', 'grass', 'fodder', 'waste', 'other']),
+      quantity: a.integer(),
+      unit: a.enum(['kg', 'bundles', 'bags']),
+      location: a.string(),
+      manualAddress: a.string(), // For manual address
+      pickupTime: a.string(),
+      contactName: a.string(),
+      contactPhone: a.string(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(['read'])
+    ]),
+
+  Flocking: a
+    .model({
+      location: a.string(),
+      manualAddress: a.string(), // For manual address
+      herdSize: a.integer(),
+      dateTime: a.datetime(), // Changed from time to dateTime
+      description: a.string(),
+      imageUri: a.string(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(['read'])
+    ]),
+
+  Garbage: a
+    .model({
+      location: a.string(), // For coordinates
+      manualAddress: a.string(), // For manual address
+      cattleCount: a.integer(),
+      garbageType: a.enum(['household', 'market', 'restaurant', 'mixed', 'other']),
+      description: a.string(),
+      imageUri: a.string(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(['read'])
+    ]),
+
+  Adoption: a
+    .model({
+      name: a.string(),
+      phone: a.string(),
+      location: a.string(), // For coordinates
+      manualAddress: a.string(), // For manual address
+      occupation: a.string(),
+      purpose: a.enum(['dairy', 'agriculture', 'shelter', 'other']),
+      experience: a.string(),
+      agreedToTerms: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [
+      allow.owner(),
+      allow.publicApiKey().to(['read'])
+    ])
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -27,7 +102,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'iam',
+    defaultAuthorizationMode: 'apiKey',
   },
 });
 

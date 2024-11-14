@@ -45,12 +45,6 @@ function RootLayoutNav() {
         }}
       />
       <Stack.Screen 
-        name="(auth)/Reset" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
         name="(auth)/Signin" 
         options={{ 
           headerShown: false 

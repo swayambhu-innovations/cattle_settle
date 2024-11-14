@@ -1,8 +1,26 @@
+import { useEffect } from 'react';
 import { Text, View, StyleSheet, Pressable } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../hooks/auth';
 
 export default function Signout() {
+  const { signOut, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/');
+    }
+  }, [isAuthenticated]);
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
+
   return (
     <>
       <Stack.Screen 
@@ -43,7 +61,7 @@ export default function Signout() {
 
           <Pressable 
             style={[styles.button, styles.signoutButton]}
-            onPress={() => router.replace('/')}
+            onPress={handleSignOut}
           >
             <Text style={[styles.buttonText, styles.signoutText]}>Sign Out</Text>
           </Pressable>

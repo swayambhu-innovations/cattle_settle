@@ -15,6 +15,7 @@
     "preset": "jest-expo"
   },
   "dependencies": {
+    "@aws-amplify/backend-graphql": "^0.3.2",
     "@aws-amplify/react-native": "^1.1.6",
     "@aws-amplify/ui-react-native": "^2.2.16",
     "@expo/vector-icons": "^14.0.4",

@@ -1,12 +1,36 @@
-import { Text, View, TextInput, StyleSheet, Pressable } from 'react-native';
-import { Stack,Href, router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Text, View, TextInput, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { Stack, router } from 'expo-router';
+import { useAuth } from '../../hooks/auth';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function Signin() {
-  const handleSignin = () => {
-    const href: Href<string> = '/(tabs)/home';
-    router.replace(href);
+  const [phone, setPhone] = useState('');
+  const { signIn, isAuthenticated, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/home');
+    }
+  }, [isAuthenticated]);
+
+  const handleSignin = async () => {
+    try {
+      await signIn(phone);
+      router.replace('/Login');
+    } catch (error: any) {
+      alert(error.message || 'Sign in failed');
+    }
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <>
       <Stack.Screen 
@@ -35,45 +59,24 @@ export default function Signin() {
         }}
       />
       <View style={styles.container}>
-        <Text style={styles.title}>Sign In with OTP</Text>
+        <Text style={styles.title}>Sign In with Phone</Text>
         
         <View style={styles.inputContainer}>
           <TextInput 
             style={styles.input}
-            placeholder="Phone Number"
-            placeholderTextColor="#999"
+            placeholder="Phone Number (+1234567890)"
+            value={phone}
+            onChangeText={setPhone}
             keyboardType="phone-pad"
             autoCapitalize="none"
           />
-          <TextInput 
-            style={styles.input}
-            placeholder="Enter OTP"
-            placeholderTextColor="#999"
-            keyboardType="number-pad"
-            maxLength={6}
-          />
-                  
-        <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input}
-            placeholder="Enter Password"
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
-          <TextInput 
-            style={styles.input}
-            placeholder="Retype Password"
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
-        </View>
         </View>
 
         <Pressable 
           style={styles.button}
           onPress={handleSignin}
         >
-          <Text style={styles.buttonText}>Verify & Sign In</Text>
+          <Text style={styles.buttonText}>Continue with Phone</Text>
         </Pressable>
       </View>
     </>

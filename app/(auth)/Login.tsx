@@ -1,16 +1,51 @@
-import { Text, View, TextInput, StyleSheet, Pressable } from 'react-native';
-import { router, Href, Link, Stack } from 'expo-router';
+import { useState, useEffect } from 'react';
+import { Text, View, TextInput, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { useAuth } from '../../hooks/auth';
 
 export default function Login() {
-  const handleLogin = () => {
-    const href: Href<string> = '/(tabs)/home';
-    router.replace(href);
+  const [phone, setPhone] = useState('');
+  const [otp, setOtp] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { signIn, verifyOTP, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace('/(tabs)/home');
+    }
+  }, [isAuthenticated]);
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      if (!isVerifying) {
+        await signIn(phone);
+        setIsVerifying(true);
+      } else {
+        await verifyOTP(otp);
+        router.replace('/(tabs)/home');
+      }
+    } catch (error: any) {
+      alert(error.message || 'Authentication failed');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
   return (
     <>
       <Stack.Screen 
         options={{
-          title: "Login", // Change header text
+          title: isVerifying ? "Verify OTP" : "Phone Login",
           headerStyle: {
             backgroundColor: '#ffffff',
           },
@@ -23,64 +58,40 @@ export default function Login() {
         }} 
       />
       <View style={styles.container}>
-        <Text style={styles.title}>welcome human</Text>
+        <Text style={styles.title}>
+          {isVerifying ? "Enter verification code" : "Enter your phone number"}
+        </Text>
         
         <View style={styles.inputContainer}>
-          <TextInput 
-            style={styles.input}
-            placeholder="Phone Number"
-            placeholderTextColor="#999"
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <TextInput 
-            style={styles.input}
-            placeholder="One time password"
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
+          {!isVerifying ? (
+            <TextInput 
+              style={styles.input}
+              placeholder="Phone Number (+1234567890)"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              autoCapitalize="none"
+            />
+          ) : (
+            <TextInput 
+              style={styles.input}
+              placeholder="Enter OTP"
+              value={otp}
+              onChangeText={setOtp}
+              keyboardType="number-pad"
+              maxLength={6}
+            />
+          )}
         </View>
 
         <Pressable 
           style={styles.button} 
           onPress={handleLogin}
         >
-          <Text style={styles.buttonText}>Login</Text>
+          <Text style={styles.buttonText}>
+            {isVerifying ? "Verify OTP" : "Send Code"}
+          </Text>
         </Pressable>
-        <View style={styles.linksContainer}>
-          <Link href="/(auth)/Reset" asChild>
-            <Pressable
-              style={({ pressed }) => [
-                styles.linkWrapper,
-                { opacity: pressed ? 0.7 : 1 }
-              ]}
-            >
-              <Text style={styles.link}>Reset Password</Text>
-            </Pressable>
-          </Link>
-
-          <Link href="/(auth)/Signin" asChild>
-            <Pressable
-              style={({ pressed }) => [
-                styles.linkWrapper,
-                { opacity: pressed ? 0.7 : 1 }
-              ]}
-            >
-              <Text style={styles.link}>Sign In</Text>
-            </Pressable>
-          </Link>
-
-          <Link href="/(auth)/Signout" asChild>
-            <Pressable
-              style={({ pressed }) => [
-                styles.linkWrapper,
-                { opacity: pressed ? 0.7 : 1 }
-              ]}
-            >
-              <Text style={styles.link}>Sign Out</Text>
-            </Pressable>
-          </Link>
-        </View>
       </View>
     </>
   );
