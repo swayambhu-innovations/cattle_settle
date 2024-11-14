@@ -1,16 +1,96 @@
-import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Image, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  StyleSheet,
+  Image,
+  GestureResponderEvent,
+  Dimensions,
+  Alert,
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { ScrollView } from 'react-native-gesture-handler';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { Ionicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import { generateClient } from "aws-amplify/data";
+import { type Schema } from "@/amplify/data/resource";
+
+const client = generateClient<Schema>();
 
 export default function Casualty() {
-  const [location, setLocation] = useState('');
+  const [location, setLocation] = useState(''); // For coordinates/auto-location
   const [description, setDescription] = useState('');
   const [date, setDate] = useState(new Date());
   const [image, setImage] = useState<string | null>(null);
-  const [showPicker, setShowPicker] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [mapRegion, setMapRegion] = useState({
+    latitude: 0,
+    longitude: 0,
+    latitudeDelta: 0.0922,
+    longitudeDelta: 0.0421,
+  });
+  const [selectedLocation, setSelectedLocation] = useState<Coordinate | null>(null);
+  const [showMap, setShowMap] = useState(false);
+  const [manualAddress, setManualAddress] = useState(''); // For manual entry only
+  const [incidentType, setIncidentType] = useState<'road_accident' | 'medical' | 'traffic' | 'other' | null>(null);
+
+  useEffect(() => {
+    const getCurrentLocation = async () => {
+      try {
+        // Request location permission
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          Alert.alert('Permission Denied', 'Location access is required');
+          return;
+        }
+
+        // Get current position
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+
+        // Update map region with live coordinates
+        setMapRegion({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        });
+
+        // Update selected location marker
+        setSelectedLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+
+        // Get address from coordinates
+        const address = await Location.reverseGeocodeAsync({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+
+        if (address[0]) {
+          const locationString = `${address[0].street || ''}, ${address[0].city || ''}, ${address[0].region || ''}`;
+          setLocation(locationString);
+        }
+
+      } catch (error) {
+        Alert.alert('Error', 'Failed to get current location');
+      }
+    };
+
+    getCurrentLocation();
+  }, []);
 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -25,77 +105,207 @@ export default function Casualty() {
     }
   };
 
-  const onChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    setShowPicker(false);
-    if (event.type === 'set') {
-      setDate(selectedDate || date);
+  const dismissKeyboard = () => {
+    Keyboard.dismiss();
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisible(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisible(false);
+  };
+
+  const handleConfirm = (selectedDate: Date) => {
+    setDate(selectedDate);
+    hideDatePicker();
+  };
+
+  const handleSubmit = async (event: GestureResponderEvent) => {
+    event.preventDefault();
+    
+    try {
+      const casualtyData = {
+        location: selectedLocation ? `${selectedLocation.latitude}, ${selectedLocation.longitude}` : null,
+        manualAddress,
+        incidentType,
+        date: date.toISOString(),
+        description,
+        imageUri: image
+      };
+
+      const response = await client.models.Casualty.create(casualtyData);
+      console.log('Submission successful:', response);
+      
+      // Reset form fields
+      setLocation('');
+      setManualAddress('');
+      setIncidentType(null);
+      setDescription('');
+      setDate(new Date());
+      setImage(null);
+      setSelectedLocation(null);
+
+      Alert.alert('Success', 'Report submitted successfully');
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      Alert.alert('Error', 'Failed to submit report');
     }
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement form submission logic
-    console.log({ location, description, date, image });
+  interface Coordinate {
+    latitude: number;
+    longitude: number;
+  }
+
+  interface MapPressEvent {
+    nativeEvent: {
+      coordinate: Coordinate;
+    };
+  }
+
+  const handleMapPress = (e: MapPressEvent) => {
+    setSelectedLocation(e.nativeEvent.coordinate);
+    setLocation(`${e.nativeEvent.coordinate.latitude}, ${e.nativeEvent.coordinate.longitude}`);
+  };
+
+  const getCurrentLocation = async () => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Please allow location access');
+        return;
+      }
+
+      const currentLocation = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High
+      });
+      const { latitude, longitude } = currentLocation.coords;
+      
+      // Update map region with coordinates
+      setMapRegion({
+        latitude,
+        longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+
+      // Set selected location marker
+      setSelectedLocation({ latitude, longitude });
+      
+      // Store raw coordinates instead of address
+      setLocation(`${latitude}, ${longitude}`);
+      
+      // Show map
+      setShowMap(true);
+    } catch (error) {
+      Alert.alert('Error', 'Could not fetch location');
+    }
   };
 
   return (
     <GestureHandlerRootView style={styles.rootContainer}>
-      <ScrollView style={styles.container}>
-        <View style={styles.formContainer}>
-          <Text style={styles.label}>Location</Text>
-          <TextInput
-            style={styles.input}
-            value={location}
-            onChangeText={setLocation}
-            placeholder="Enter location"
-          />
-
-          <Text style={styles.label}>Date and Time</Text>
-          {Platform.OS === 'android' ? (
-            <>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.rootContainer}
+      >
+        <TouchableWithoutFeedback onPress={dismissKeyboard}>
+          <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
+            <View style={styles.formContainer}>
+              <Text style={styles.label}>Location</Text>
               <TouchableOpacity 
-                style={styles.input} 
-                onPress={() => setShowPicker(true)}
+                style={styles.locationButton}
+                onPress={getCurrentLocation}
+              >
+                <View style={styles.buttonContent}>
+                  <Ionicons name="location" size={24} color="#fff" />
+                  <Text style={styles.buttonText}>
+                    Select Current Location
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              <Text style={styles.label}>Manual Address</Text>
+              <TextInput
+                style={[styles.input, styles.addressInput]}
+                value={manualAddress}
+                onChangeText={setManualAddress}
+                placeholder="Enter address manually"
+                multiline
+                numberOfLines={2}
+              />
+
+              {showMap && (
+                <View style={styles.mapContainer}>
+                  <MapView
+                    style={styles.map}
+                    region={mapRegion}
+                    onPress={handleMapPress}
+                  >
+                    {selectedLocation && (
+                      <Marker
+                        coordinate={selectedLocation}
+                        title="Selected Location"
+                      />
+                    )}
+                  </MapView>
+                </View>
+              )}
+
+              <Text style={styles.label}>Incident Type</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={incidentType}
+                  onValueChange={(value) => setIncidentType(value)}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="Select incident type" value="" />
+                  <Picker.Item label="Road Accident" value="road_accident" />
+                  <Picker.Item label="Medical Emergency" value="medical" />
+                  <Picker.Item label="Traffic Obstruction" value="traffic" />
+                  <Picker.Item label="Other" value="other" />
+                </Picker>
+              </View>
+
+              <Text style={styles.label}>Date and Time</Text>
+              <TouchableOpacity 
+                style={styles.input}
+                onPress={showDatePicker}
               >
                 <Text>{date.toLocaleString()}</Text>
               </TouchableOpacity>
-              {showPicker && (
-                <DateTimePicker
-                  value={date}
-                  mode="datetime"
-                  onChange={onChange}
-                  display="default"
-                />
-              )}
-            </>
-          ) : (
-            <DateTimePicker
-              value={date}
-              mode="datetime"
-              onChange={onChange}
-            />
-          )}
 
-          <Text style={styles.label}>Description</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Describe the incident"
-            multiline
-            numberOfLines={4}
-          />
+              <DateTimePickerModal
+                isVisible={isDatePickerVisible}
+                mode="datetime"
+                onConfirm={handleConfirm}
+                onCancel={hideDatePicker}
+              />
 
-          <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-            <Text style={styles.imageButtonText}>Add Photo</Text>
-          </TouchableOpacity>
+              <Text style={styles.label}>Description</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={description}
+                onChangeText={setDescription}
+                placeholder="Describe the incident"
+                multiline
+                numberOfLines={4}
+              />
 
-          {image && <Image source={{ uri: image }} style={styles.previewImage} />}
+              <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+                <Text style={styles.imageButtonText}>Add Photo</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Report</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+              {image && <Image source={{ uri: image }} style={styles.previewImage} />}
+
+              <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                <Text style={styles.submitButtonText}>Submit Report</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </GestureHandlerRootView>
   );
 }
@@ -159,5 +369,65 @@ const styles = StyleSheet.create({
   datePickerIOS: {
     width: '100%',
     height: 40,
+  },
+  webDatePicker: {
+    padding: 12,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    width: '100%',
+    marginBottom: 16,
+  },
+  mapContainer: {
+    height: 300,
+    marginVertical: 12,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  map: {
+    width: '100%',
+    height: '100%',
+  },
+  locationContainer: {
+    marginVertical: 10,
+  },
+  locationButton: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  addressInput: {
+    height: 100,
+    textAlignVertical: 'top',
+  },
+  pickerContainer: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    marginBottom: 16,
+    backgroundColor: '#fff',
+  },
+  picker: {
+    height: 50,
+    width: '100%',
   },
 });
