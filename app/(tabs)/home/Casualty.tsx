@@ -125,17 +125,35 @@ export default function Casualty() {
   const handleSubmit = async (event: GestureResponderEvent) => {
     event.preventDefault();
     
-    try {
-      const casualtyData = {
-        location: selectedLocation ? `${selectedLocation.latitude}, ${selectedLocation.longitude}` : null,
-        manualAddress,
-        incidentType,
-        date: date.toISOString(),
-        description,
-        imageUri: image
-      };
+    // Validate required fields
+    if (!incidentType) {
+      Alert.alert('Error', 'Please select an incident type');
+      return;
+    }
 
-      const response = await client.models.Casualty.create(casualtyData);
+    if (!description) {
+      Alert.alert('Error', 'Please provide a description');
+      return;
+    }
+
+    if (!location && !manualAddress) {
+      Alert.alert('Error', 'Please provide either location or manual address');
+      return;
+    }
+
+    try {
+      // Create data entry according to the schema
+      const response = await client.models.Casualty.create({
+        location: selectedLocation 
+          ? `${selectedLocation.latitude},${selectedLocation.longitude}`
+          : null,
+        manualAddress: manualAddress || '',
+        incidentType: incidentType,
+        date: date.toISOString(),
+        description: description,
+        imageUri: image || ''
+      });
+
       console.log('Submission successful:', response);
       
       // Reset form fields
@@ -146,11 +164,12 @@ export default function Casualty() {
       setDate(new Date());
       setImage(null);
       setSelectedLocation(null);
+      setShowMap(false);
 
       Alert.alert('Success', 'Report submitted successfully');
     } catch (error) {
       console.error('Error submitting report:', error);
-      Alert.alert('Error', 'Failed to submit report');
+      Alert.alert('Error', 'Failed to submit report. Please try again.');
     }
   };
 
