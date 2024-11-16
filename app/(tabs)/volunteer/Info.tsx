@@ -123,6 +123,67 @@ export default function VolunteerInfo() {
     };
 
     fetchDetails();
+
+    // Add subscription for real-time updates
+    let subscription: { unsubscribe: () => void } | undefined;
+    if (type && id) {
+      switch (type) {
+        case 'Casualty':
+          subscription = client.models.Casualty.observeQuery()
+            .subscribe({
+              next: ({ items }) => {
+                const updatedItem = items.find(item => item.id === id);
+                if (updatedItem) setData(updatedItem);
+              },
+              error: (err) => console.error('Subscription error:', err)
+            });
+          break;
+        case 'Donation':
+          subscription = client.models.Donation.observeQuery()
+            .subscribe({
+              next: ({ items }) => {
+                const updatedItem = items.find(item => item.id === id);
+                if (updatedItem) setData(updatedItem);
+              },
+              error: (err) => console.error('Subscription error:', err)
+            });
+          break;
+        case 'Flocking':
+          subscription = client.models.Flocking.observeQuery()
+            .subscribe({
+              next: ({ items }) => {
+                const updatedItem = items.find(item => item.id === id);
+                if (updatedItem) setData(updatedItem);
+              },
+              error: (err) => console.error('Subscription error:', err)
+            });
+          break;
+        case 'Garbage':
+          subscription = client.models.Garbage.observeQuery()
+            .subscribe({
+              next: ({ items }) => {
+                const updatedItem = items.find(item => item.id === id);
+                if (updatedItem) setData(updatedItem);
+              },
+              error: (err) => console.error('Subscription error:', err)
+            });
+          break;
+        case 'Adoption':
+          subscription = client.models.Adoption.observeQuery()
+            .subscribe({
+              next: ({ items }) => {
+                const updatedItem = items.find(item => item.id === id);
+                if (updatedItem) setData(updatedItem);
+              },
+              error: (err) => console.error('Subscription error:', err)
+            });
+          break;
+      }
+    }
+
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, [type, id]);
 
   const handleAccept = async () => {
@@ -171,6 +232,57 @@ export default function VolunteerInfo() {
     } catch (err) {
       console.error('Error accepting volunteer job:', err);
       setError(err instanceof Error ? err.message : 'Failed to accept');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUnaccept = async () => {
+    if (!data || isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      let response;
+      
+      switch (type) {
+        case 'Casualty':
+          response = await client.models.Casualty.update({
+            id: data.id,
+            isAccepted: false
+          });
+          break;
+        case 'Donation':
+          response = await client.models.Donation.update({
+            id: data.id,
+            isAccepted: false
+          });
+          break;
+        case 'Flocking':
+          response = await client.models.Flocking.update({
+            id: data.id,
+            isAccepted: false
+          });
+          break;
+        case 'Garbage':
+          response = await client.models.Garbage.update({
+            id: data.id,
+            isAccepted: false
+          });
+          break;
+        case 'Adoption':
+          response = await client.models.Adoption.update({
+            id: data.id,
+            isAccepted: false
+          });
+          break;
+      }
+
+      if (response?.data) {
+        setData(response.data);
+      }
+    } catch (err) {
+      console.error('Error unaccepting volunteer job:', err);
+      setError(err instanceof Error ? err.message : 'Failed to unaccept');
     } finally {
       setIsUpdating(false);
     }
@@ -249,13 +361,23 @@ export default function VolunteerInfo() {
           <Text style={styles.subtitle}>
             Status: {data.isAccepted ? '✅ Accepted' : '⏳ Pending'}
           </Text>
-          {!data.isAccepted && (
+          {data.isAccepted ? (
             <TouchableOpacity 
-              style={[styles.acceptButton, isUpdating && styles.acceptButtonDisabled]}
+              style={[styles.unacceptButton, isUpdating && styles.buttonDisabled]}
+              onPress={handleUnaccept}
+              disabled={isUpdating}
+            >
+              <Text style={styles.buttonText}>
+                {isUpdating ? 'Updating...' : 'Unaccept Job'}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity 
+              style={[styles.acceptButton, isUpdating && styles.buttonDisabled]}
               onPress={handleAccept}
               disabled={isUpdating}
             >
-              <Text style={styles.acceptButtonText}>
+              <Text style={styles.buttonText}>
                 {isUpdating ? 'Accepting...' : 'Accept Job'}
               </Text>
             </TouchableOpacity>
@@ -398,10 +520,21 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-  acceptButtonDisabled: {
+  unacceptButton: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  buttonDisabled: {
     opacity: 0.5,
   },
-  acceptButtonText: {
+  buttonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
