@@ -1,54 +1,12 @@
-import { Stack } from "expo-router";
-import { useEffect } from "react";
-import { router } from "expo-router";
+import { Stack } from 'expo-router';
+import { VolunteerProvider } from '../hooks/volunteer';
 
-function RootLayoutNav() {
-  function useAuth() {
-    return {
-      isAuthenticated: true,
-      // other properties and methods
-    };
-  }
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/(tabs)/home");
-    } else {
-      router.push("/");
-    }
-  }, [isAuthenticated]);
-
+export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: '#ffffff',
-        },
-        headerTintColor: '#333333',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-          fontSize: 20,
-        },
-        headerTitleAlign: 'center',
-        headerShadowVisible: false,
-        headerBackTitle: '',
-        headerLeft: () => null,
-        gestureEnabled: false
-      }}
-    >
-      <Stack.Screen 
-        name="index" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
-        name="(tabs)" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-    </Stack>
+    <VolunteerProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </VolunteerProvider>
   );
 }
