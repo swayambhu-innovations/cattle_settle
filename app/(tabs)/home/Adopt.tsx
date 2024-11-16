@@ -10,13 +10,13 @@ import { type Schema } from "@/amplify/data/resource";
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
+import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
 export default function Adopt() {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
   const [occupation, setOccupation] = useState('');
   const [purpose, setPurpose] = useState<'dairy' | 'agriculture' | 'shelter' | 'other'>('dairy');
   const [experience, setExperience] = useState('');
@@ -39,33 +39,45 @@ export default function Adopt() {
   ];
 
   const handleSubmit = async () => {
+    if (!name || !phone) {
+      Alert.alert('Error', 'Please fill in all required fields');
+      return;
+    }
+
     try {
+      let locationString = '';
+      
+      if (selectedLocation) {
+        locationString = `${selectedLocation.latitude},${selectedLocation.longitude}`;
+      }
+
       const response = await client.models.Adoption.create({
         name,
         phone,
-        location: selectedLocation 
-          ? `${selectedLocation.latitude},${selectedLocation.longitude}`
-          : '',
-        manualAddress,
+        location: locationString,
+        manualAddress, // Remove the address reference here
         occupation,
         purpose,
-        experience,
+        experience: experience || '',
         agreedToTerms
       });
 
       console.log('Submission successful:', response);
       
-      // Reset form
+      // Reset form - remove setAddress from here
       setName('');
       setPhone('');
-      setAddress('');
       setOccupation('');
       setPurpose('dairy');
       setExperience('');
       setAgreedToTerms(false);
       setManualAddress('');
+      setSelectedLocation(null);
+      setShowMap(false);
 
-      Alert.alert('Success', 'Application submitted successfully');
+      Alert.alert('Success', 'Application submitted successfully', [
+        { text: 'OK', onPress: () => router.replace('/home') }
+      ]);
     } catch (error) {
       console.error('Error submitting application:', error);
       Alert.alert('Error', 'Failed to submit application');
@@ -161,14 +173,6 @@ export default function Adopt() {
                   numberOfLines={2}
                 />
 
-                <TextInput
-                  style={[styles.input, styles.textArea]}
-                  value={address}
-                  onChangeText={setAddress}
-                  placeholder="Complete Address"
-                  multiline
-                  numberOfLines={3}
-                />
                 <TextInput
                   style={styles.input}
                   value={occupation}

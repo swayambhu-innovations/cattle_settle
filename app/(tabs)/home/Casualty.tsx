@@ -24,6 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { generateClient } from "aws-amplify/data";
 import { type Schema } from "@/amplify/data/resource";
+import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
@@ -166,7 +167,9 @@ export default function Casualty() {
       setSelectedLocation(null);
       setShowMap(false);
 
-      Alert.alert('Success', 'Report submitted successfully');
+      Alert.alert('Success', 'Report submitted successfully', [
+        { text: 'OK', onPress: () => router.replace('/home') }
+      ]);
     } catch (error) {
       console.error('Error submitting report:', error);
       Alert.alert('Error', 'Failed to submit report. Please try again.');

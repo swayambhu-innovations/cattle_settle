@@ -11,6 +11,7 @@ import { type Schema } from "@/amplify/data/resource";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
+import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
@@ -74,7 +75,9 @@ export default function Donate() {
       setContactPhone('');
       setManualAddress('');
 
-      Alert.alert('Success', 'Donation submitted successfully');
+      Alert.alert('Success', 'Donation submitted successfully', [
+        { text: 'OK', onPress: () => router.replace('/home') }
+      ]);
     } catch (error) {
       console.error('Error submitting donation:', error);
       Alert.alert('Error', 'Failed to submit donation');
