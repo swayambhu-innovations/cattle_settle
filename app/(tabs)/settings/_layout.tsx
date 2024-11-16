@@ -10,7 +10,7 @@ export default function SettingsLayout() {
       }}
     >
       <Stack.Screen 
-        name="index"
+        name="Index"
         options={{
           title: "Settings"
         }}
