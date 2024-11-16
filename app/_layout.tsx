@@ -1,9 +1,14 @@
 import { Stack } from "expo-router";
 import { useEffect } from "react";
 import { router } from "expo-router";
-import { AuthProvider, useAuth } from "../hooks/auth";
 
 function RootLayoutNav() {
+  function useAuth() {
+    return {
+      isAuthenticated: true,
+      // other properties and methods
+    };
+  }
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -39,37 +44,11 @@ function RootLayoutNav() {
         }}
       />
       <Stack.Screen 
-        name="(auth)/Login" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
-        name="(auth)/Signin" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
-        name="(auth)/Signout" 
-        options={{ 
-          headerShown: false 
-        }}
-      />
-      <Stack.Screen 
         name="(tabs)" 
         options={{ 
           headerShown: false 
         }}
       />
     </Stack>
-  );
-}
-
-export default function RootLayout() {
-  return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
   );
 }

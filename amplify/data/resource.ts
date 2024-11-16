@@ -15,14 +15,12 @@ const schema = a.schema({
       date: a.datetime(),
       description: a.string(),
       imageUri: a.string(),
+      isAccepted: a.boolean(),
       owner: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime()
     })
-    .authorization((allow) => [
-      allow.owner(),
-      allow.publicApiKey().to(['read'])
-    ]),
+    .authorization((allow) => [allow.guest()]),
 
   Donation: a
     .model({
@@ -34,14 +32,12 @@ const schema = a.schema({
       pickupTime: a.string(),
       contactName: a.string(),
       contactPhone: a.string(),
+      isAccepted: a.boolean(),
       owner: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime()
     })
-    .authorization((allow) => [
-      allow.owner(),
-      allow.publicApiKey().to(['read'])
-    ]),
+    .authorization((allow) => [allow.guest()]),
 
   Flocking: a
     .model({
@@ -51,14 +47,12 @@ const schema = a.schema({
       dateTime: a.datetime(), // Changed from time to dateTime
       description: a.string(),
       imageUri: a.string(),
+      isAccepted: a.boolean(),
       owner: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime()
     })
-    .authorization((allow) => [
-      allow.owner(),
-      allow.publicApiKey().to(['read'])
-    ]),
+    .authorization((allow) => [allow.guest()]),
 
   Garbage: a
     .model({
@@ -68,14 +62,12 @@ const schema = a.schema({
       garbageType: a.enum(['household', 'market', 'restaurant', 'mixed', 'other']),
       description: a.string(),
       imageUri: a.string(),
+      isAccepted: a.boolean(),
       owner: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime()
     })
-    .authorization((allow) => [
-      allow.owner(),
-      allow.publicApiKey().to(['read'])
-    ]),
+    .authorization((allow) => [allow.guest()]),
 
   Adoption: a
     .model({
@@ -87,14 +79,12 @@ const schema = a.schema({
       purpose: a.enum(['dairy', 'agriculture', 'shelter', 'other']),
       experience: a.string(),
       agreedToTerms: a.boolean(),
+      isAccepted: a.boolean(),
       owner: a.string(),
       createdAt: a.datetime(),
       updatedAt: a.datetime()
     })
-    .authorization((allow) => [
-      allow.owner(),
-      allow.publicApiKey().to(['read'])
-    ])
+    .authorization((allow) => [allow.guest()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;
@@ -102,10 +92,7 @@ export type Schema = ClientSchema<typeof schema>;
 export const data = defineData({
   schema,
   authorizationModes: {
-    defaultAuthorizationMode: 'apiKey',
-    apiKeyAuthorizationMode: {
-      expiresInDays: 365  // Increased expiration for development
-    }
+    defaultAuthorizationMode: 'iam',
   }
 });
 

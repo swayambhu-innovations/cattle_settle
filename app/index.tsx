@@ -7,7 +7,7 @@ Amplify.configure(outputs);
 
 export default function Index() {
   const getStarted = () => {
-    const href: Href<string> = '/(auth)/Login';  // Remove parentheses from path
+    const href: Href<string> = '/(tabs)/home';  // Remove parentheses from path
     router.replace(href);
   };
   return (

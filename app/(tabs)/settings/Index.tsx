@@ -36,7 +36,7 @@ export default function Settings() {
         <MenuCard title="Contact Us" icon="mail-outline" href="/settings/Contact" />
         <MenuCard title="Terms & Conditions" icon="document-text-outline" href="/settings/Terms" />
         <MenuCard title="Privacy Policy" icon="shield-checkmark-outline" href="/settings/Policy" />
-        <MenuCard title="Signout" icon="log-out-outline" href="(auth)/Signout" />
+        <MenuCard title="Signout" icon="log-out-outline" href="/" />
       </View>
     </ScrollView>
   );

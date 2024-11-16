@@ -10,7 +10,7 @@ export default function VolunteerLayout() {
       }}
     >
       <Stack.Screen 
-        name="index"
+        name="Index"
         options={{
           headerTitle: "Volunteer"
         }}
