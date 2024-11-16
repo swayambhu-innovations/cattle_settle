@@ -7,5 +7,6 @@ import { data } from './data/resource';
  */
 defineBackend({
   auth,
-  data,
+  data
+  // Remove region as it's automatically determined by Amplify
 });
