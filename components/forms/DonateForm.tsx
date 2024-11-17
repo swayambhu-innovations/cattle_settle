@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, Platform, ScrollView, TouchableOpacity,
@@ -11,11 +12,10 @@ import { type Schema } from "@/amplify/data/resource";
 import { Ionicons } from '@expo/vector-icons';
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
-import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
-export default function Donate() {
+export function DonateForm({ onClose }: { onClose: () => void }) {
   const [foodType, setFoodType] = useState<'hay' | 'grass' | 'fodder' | 'waste' | 'other'>('hay');
   const [quantity, setQuantity] = useState('');
   const [unit, setUnit] = useState<'kg' | 'bundles' | 'bags'>('kg');
@@ -76,7 +76,7 @@ export default function Donate() {
       setManualAddress('');
 
       Alert.alert('Success', 'Donation submitted successfully', [
-        { text: 'OK', onPress: () => router.replace('/home') }
+        { text: 'OK', onPress: onClose }
       ]);
     } catch (error) {
       console.error('Error submitting donation:', error);

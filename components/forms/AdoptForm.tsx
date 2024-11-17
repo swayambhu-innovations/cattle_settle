@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, Platform, ScrollView, TouchableOpacity,
@@ -10,11 +11,10 @@ import { type Schema } from "@/amplify/data/resource";
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
-export default function Adopt() {
+export function AdoptForm({ onClose }: { onClose: () => void }) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [occupation, setOccupation] = useState('');
@@ -76,7 +76,7 @@ export default function Adopt() {
       setShowMap(false);
 
       Alert.alert('Success', 'Application submitted successfully', [
-        { text: 'OK', onPress: () => router.replace('/home') }
+        { text: 'OK', onPress: onClose }
       ]);
     } catch (error) {
       console.error('Error submitting application:', error);

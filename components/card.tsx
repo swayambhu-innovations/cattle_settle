@@ -5,18 +5,17 @@ import { Link, Href } from 'expo-router';
 type CardProps = {
   title: string;
   image: any;
-  route: Href<string>;
+  route?: Href<string>;
+  onPress?: () => void;
 };
 
-export const Card = ({ title, image, route }: CardProps) => (
-  <Link href={route} asChild>
-    <Pressable style={styles.card}>
-      <Image source={image} style={styles.cardImage} resizeMode="cover" />
-      <View style={styles.titleContainer}>
-        <Text style={styles.cardTitle}>{title}</Text>
-      </View>
-    </Pressable>
-  </Link>
+export const Card = ({ title, image, route, onPress }: CardProps) => (
+  <Pressable style={styles.card} onPress={onPress}>
+    <Image source={image} style={styles.cardImage} resizeMode="cover" />
+    <View style={styles.titleContainer}>
+      <Text style={styles.cardTitle}>{title}</Text>
+    </View>
+  </Pressable>
 );
 
 const styles = StyleSheet.create({

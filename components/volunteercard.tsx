@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, Pressable } from 'react-native';
-import { router } from 'expo-router';
 import type { VolunteerData } from '@/hooks/volunteer';
 import { format, isValid, parseISO } from 'date-fns';
 
 interface VolunteerCardProps {
   item: VolunteerData;
+  onPress: () => void;
 }
 
 const formatValue = (key: string, value: any): string => {
@@ -27,13 +27,7 @@ const formatValue = (key: string, value: any): string => {
   return String(value);
 };
 
-export const VolunteerCard = ({ item }: VolunteerCardProps) => {
-  const handlePress = () => {
-    router.push({
-      pathname: '/volunteer/Info',
-      params: { type: item.type, id: item.data.id }
-    });
-  };
+export const VolunteerCard = ({ item, onPress }: VolunteerCardProps) => {
 
   const renderDetails = () => {
     const data = item.data;
@@ -95,7 +89,7 @@ export const VolunteerCard = ({ item }: VolunteerCardProps) => {
 
   return (
     <Pressable 
-      onPress={handlePress} 
+      onPress={onPress}
       style={({ pressed }) => [
         styles.card,
         pressed && styles.pressed

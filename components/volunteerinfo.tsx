@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
 import { generateClient } from "aws-amplify/data";
 import { type Schema } from "@/amplify/data/resource";
 import { useEffect, useState } from 'react';
 import { format, isValid, parseISO } from 'date-fns';
 import MapView, { Marker } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
 
 const client = generateClient<Schema>();
 
@@ -65,10 +65,13 @@ const parseLocation = (locationString: string | null) => {
   }
 };
 
-export default function VolunteerInfo() {
-  const params = useLocalSearchParams();
-  const type = params.type as string;
-  const id = params.id as string;
+interface VolunteerInfoProps {
+  type: string;
+  id: string;
+  onClose?: () => void;
+}
+
+export const VolunteerInfo = ({ type, id, onClose }: VolunteerInfoProps) => {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -327,18 +330,39 @@ export default function VolunteerInfo() {
 
   const location = data?.location ? parseLocation(data.location) : null;
 
+  // Early return for loading and error states with header
   if (loading) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <ActivityIndicator size="large" color="#007AFF" />
+      <View style={styles.root}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{type}</Text>
+          <View style={{ width: 32 }} />
+        </View>
+        <View style={[styles.container, styles.centerContent]}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </View>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.errorText}>Error: {error}</Text>
+      <View style={styles.root}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{type}</Text>
+          <View style={{ width: 32 }} />
+        </View>
+        <View style={[styles.container, styles.centerContent]}>
+          <Text style={styles.errorText}>Error: {error}</Text>
+        </View>
       </View>
     );
   }
@@ -347,88 +371,146 @@ export default function VolunteerInfo() {
   
   if (!sections) {
     return (
-      <View style={[styles.container, styles.centerContent]}>
-        <Text style={styles.errorText}>No data found</Text>
+      <View style={styles.root}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={onClose} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{type}</Text>
+          <View style={{ width: 32 }} />
+        </View>
+        <View style={[styles.container, styles.centerContent]}>
+          <Text style={styles.errorText}>No data found</Text>
+        </View>
       </View>
     );
   }
 
+  // Main render with all content
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{type} Details</Text>
-        <View style={styles.statusContainer}>
-          <Text style={styles.subtitle}>
-            Status: {data.isAccepted ? '✅ Accepted' : '⏳ Pending'}
-          </Text>
-          {data.isAccepted ? (
-            <TouchableOpacity 
-              style={[styles.unacceptButton, isUpdating && styles.buttonDisabled]}
-              onPress={handleUnaccept}
-              disabled={isUpdating}
-            >
-              <Text style={styles.buttonText}>
-                {isUpdating ? 'Updating...' : 'Unaccept Job'}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity 
-              style={[styles.acceptButton, isUpdating && styles.buttonDisabled]}
-              onPress={handleAccept}
-              disabled={isUpdating}
-            >
-              <Text style={styles.buttonText}>
-                {isUpdating ? 'Accepting...' : 'Accept Job'}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
+    <View style={styles.root}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={onClose}
+          style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Text style={styles.backText}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{type}</Text>
+        <View style={{ width: 32 }} />
       </View>
 
-      {location?.latitude && location?.longitude && (
+      <ScrollView style={styles.container}>
+        {/* Status card */}
         <View style={styles.card}>
-          <Text style={styles.sectionTitle}>LOCATION</Text>
-          <View style={styles.mapContainer}>
-            <MapView
-              style={styles.map}
-              initialRegion={{
-                latitude: location.latitude,
-                longitude: location.longitude,
-                latitudeDelta: 0.01,
-                longitudeDelta: 0.01,
-              }}
-            >
-              <Marker
-                coordinate={location}
-                title={type}
-                description={data.manualAddress || 'Selected location'}
-              />
-            </MapView>
+          <Text style={styles.title}>{type} Details</Text>
+          <View style={styles.statusContainer}>
+            <Text style={styles.subtitle}>
+              Status: {data.isAccepted ? '✅ Accepted' : '⏳ Pending'}
+            </Text>
+            {data.isAccepted ? (
+              <TouchableOpacity 
+                style={[styles.unacceptButton, isUpdating && styles.buttonDisabled]}
+                onPress={handleUnaccept}
+                disabled={isUpdating}
+              >
+                <Text style={styles.buttonText}>
+                  {isUpdating ? 'Updating...' : 'Unaccept Job'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity 
+                style={[styles.acceptButton, isUpdating && styles.buttonDisabled]}
+                onPress={handleAccept}
+                disabled={isUpdating}
+              >
+                <Text style={styles.buttonText}>
+                  {isUpdating ? 'Accepting...' : 'Accept Job'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
-          <Text style={styles.locationText}>
-            Coordinates: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-          </Text>
         </View>
-      )}
 
-      {Object.entries(sections).map(([sectionName, keys]) => 
-        keys.length > 0 ? (
-          <View key={sectionName} style={styles.card}>
-            <Text style={styles.sectionTitle}>{sectionName.toUpperCase()}</Text>
-            {keys.map(key => (
-              <View key={key} style={styles.row}>
-                <Text style={styles.key}>{getDisplayLabel(key)}</Text>
-                <Text style={styles.value}>{formatValue(key, data[key])}</Text>
-              </View>
-            ))}
+        {/* Location card */}
+        {location?.latitude && location?.longitude && (
+          <View style={styles.card}>
+            <Text style={styles.sectionTitle}>LOCATION</Text>
+            <View style={styles.mapContainer}>
+              <MapView
+                style={styles.map}
+                initialRegion={{
+                  latitude: location.latitude,
+                  longitude: location.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}
+              >
+                <Marker
+                  coordinate={location}
+                  title={type}
+                  description={data.manualAddress || 'Selected location'}
+                />
+              </MapView>
+            </View>
+            <Text style={styles.locationText}>
+              Coordinates: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+            </Text>
           </View>
-        ) : null
-      )}
-    </ScrollView>
+        )}
+
+        {/* Section cards */}
+        {Object.entries(sections).map(([sectionName, keys]) => 
+          keys.length > 0 ? (
+            <View key={sectionName} style={styles.card}>
+              <Text style={styles.sectionTitle}>{sectionName.toUpperCase()}</Text>
+              {keys.map(key => (
+                <View key={key} style={styles.row}>
+                  <Text style={styles.key}>{getDisplayLabel(key)}</Text>
+                  <Text style={styles.value}>{formatValue(key, data[key])}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 4,
+  },
+  backText: {
+    marginLeft: 4,
+    fontSize: 16,
+    color: '#000',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+  },
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',

@@ -11,11 +11,10 @@ import { type Schema } from "@/amplify/data/resource";
 import * as Location from 'expo-location';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
-export default function Garbage() {
+export function GarbageForm({ onClose }: { onClose: () => void }) {
   const [location, setLocation] = useState('');
   const [cattleCount, setCattleCount] = useState('');
   const [garbageType, setGarbageType] = useState<'household' | 'market' | 'restaurant' | 'mixed' | 'other'>('household');
@@ -109,7 +108,7 @@ export default function Garbage() {
       setManualAddress('');
 
       Alert.alert('Success', 'Report submitted successfully', [
-        { text: 'OK', onPress: () => router.replace('/home') }
+        { text: 'OK', onPress: onClose }
       ]);
     } catch (error) {
       console.error('Error submitting report:', error);

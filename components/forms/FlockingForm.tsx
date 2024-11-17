@@ -12,11 +12,10 @@ import { generateClient } from "aws-amplify/data";
 import { type Schema } from "@/amplify/data/resource";
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
-import { router } from 'expo-router';
 
 const client = generateClient<Schema>();
 
-export default function Flocking() {
+export function FlockingForm({ onClose }: { onClose: () => void }) {
   const [location, setLocation] = useState('');
   const [herdSize, setHerdSize] = useState('');
   const [description, setDescription] = useState('');
@@ -70,7 +69,7 @@ export default function Flocking() {
       setManualAddress('');
 
       Alert.alert('Success', 'Report submitted successfully', [
-        { text: 'OK', onPress: () => router.replace('/home') }
+        { text: 'OK', onPress: onClose }
       ]);
     } catch (error) {
       console.error('Error submitting report:', error);

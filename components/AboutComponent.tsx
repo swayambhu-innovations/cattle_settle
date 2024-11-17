@@ -1,8 +1,17 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export default function About() {
+interface AboutComponentProps {
+  onBack: () => void;
+}
+
+export default function AboutComponent({ onBack }: AboutComponentProps) {
   return (
     <ScrollView style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={onBack}>
+        <Ionicons name="arrow-back" size={24} color="#333" />
+        <Text style={styles.backText}>Back</Text>
+      </TouchableOpacity>
       <View style={styles.content}>
         <Text style={styles.title}>About Cattle Settle</Text>
         <Text style={styles.text}>
@@ -45,5 +54,15 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#666',
     marginBottom: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 8,
+  },
+  backText: {
+    fontSize: 16,
+    color: '#333',
   },
 });

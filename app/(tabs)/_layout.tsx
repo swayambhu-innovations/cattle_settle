@@ -1,56 +1,44 @@
-import { Tabs } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { VolunteerProvider } from '@/hooks/volunteer';
 
-export default function TabLayout() {
+export default function TabsLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: '#fff',
-          borderTopWidth: 1,
-          borderTopColor: '#e5e5e5',
-          
-        },
+    <VolunteerProvider>
+      <Tabs screenOptions={{
         tabBarActiveTintColor: '#007AFF',
         tabBarInactiveTintColor: '#8E8E93',
-        headerTitle: 'Cattle Settle',
-        headerLeft: () => null,
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null, // Hide this tab from the tab bar
-        }}
-      />
-      <Tabs.Screen
-        name="home"
-        options={{
-          title: "Report",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="volunteer"
-        options={{
-          title: "Volunteer",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="swap-horizontal-outline" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      }}>
+        <Tabs.Screen
+          name="index"
+          options={{
+            headerShown: false,
+            tabBarButton: () => null,
+            tabBarStyle: { display: 'none' }
+          }}
+        />
+        <Tabs.Screen
+          name="home"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ color }) => <Ionicons name="home-outline" size={24} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="volunteer"
+          options={{
+            title: 'Volunteer',
+            tabBarIcon: ({ color }) => <Ionicons name="people-outline" size={24} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: 'Settings',
+            tabBarIcon: ({ color }) => <Ionicons name="settings-outline" size={24} color={color} />,
+          }}
+        />
+      </Tabs>
+    </VolunteerProvider>
   );
 }
