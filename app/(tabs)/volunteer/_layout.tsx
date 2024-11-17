@@ -1,26 +1,28 @@
 import { Stack } from "expo-router";
+import { VolunteerProvider } from '../../../hooks/volunteer';
 
 export default function VolunteerLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerTitle: "Cattle Settle",
-
-      }}
-    >
-      <Stack.Screen 
-        name="Index"
-        options={{
-          headerTitle: "Volunteer"
+    <VolunteerProvider>
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          headerTitle: "Cattle Settle",
         }}
-      />
-      <Stack.Screen 
-        name="Info"
-        options={{
-          headerTitle: "Volunteer Information"
-        }}
-      />
-    </Stack>
+      >
+        <Stack.Screen 
+          name="Index"
+          options={{
+            headerTitle: "Volunteer"
+          }}
+        />
+        <Stack.Screen 
+          name="Info"
+          options={{
+            headerTitle: "Volunteer Information"
+          }}
+        />
+      </Stack>
+    </VolunteerProvider>
   );
 }
