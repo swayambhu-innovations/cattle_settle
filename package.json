@@ -62,7 +62,7 @@
     "@types/react": "~18.2.45",
     "@types/react-test-renderer": "^18.0.7",
     "aws-cdk": "^2.166.0",
-    "aws-cdk-lib": "^2.166.0",
+    "aws-cdk-lib": "^2.179.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "constructs": "^10.4.2",
     "esbuild": "^0.24.0",
