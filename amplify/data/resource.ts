@@ -7,9 +7,82 @@ specifies that any unauthenticated user can "create", "read", "update",
 and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a.schema({
-  Todo: a
+  Casualty: a
     .model({
-      content: a.string(),
+      location: a.string(),
+      manualAddress: a.string(),
+      incidentType: a.enum(['road_accident', 'medical', 'traffic', 'other']),
+      date: a.datetime(),
+      description: a.string(),
+      imageUri: a.string(),
+      isAccepted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  Donation: a
+    .model({
+      foodType: a.enum(['hay', 'grass', 'fodder', 'waste', 'other']),
+      quantity: a.integer(),
+      unit: a.enum(['kg', 'bundles', 'bags']),
+      location: a.string(),
+      manualAddress: a.string(), // For manual address
+      pickupTime: a.string(),
+      contactName: a.string(),
+      contactPhone: a.string(),
+      isAccepted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  Flocking: a
+    .model({
+      location: a.string(),
+      manualAddress: a.string(), // For manual address
+      herdSize: a.integer(),
+      dateTime: a.datetime(), // Changed from time to dateTime
+      description: a.string(),
+      imageUri: a.string(),
+      isAccepted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  Garbage: a
+    .model({
+      location: a.string(), // For coordinates
+      manualAddress: a.string(), // For manual address
+      cattleCount: a.integer(),
+      garbageType: a.enum(['household', 'market', 'restaurant', 'mixed', 'other']),
+      description: a.string(),
+      imageUri: a.string(),
+      isAccepted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
+    })
+    .authorization((allow) => [allow.guest()]),
+
+  Adoption: a
+    .model({
+      name: a.string(),
+      phone: a.string(),
+      location: a.string(), // For coordinates
+      manualAddress: a.string(), // For manual address
+      occupation: a.string(),
+      purpose: a.enum(['dairy', 'agriculture', 'shelter', 'other']),
+      experience: a.string(),
+      agreedToTerms: a.boolean(),
+      isAccepted: a.boolean(),
+      owner: a.string(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime()
     })
     .authorization((allow) => [allow.guest()]),
 });
@@ -20,7 +93,7 @@ export const data = defineData({
   schema,
   authorizationModes: {
     defaultAuthorizationMode: 'iam',
-  },
+  }
 });
 
 /*== STEP 2 ===============================================================
